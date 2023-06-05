@@ -17,7 +17,7 @@ const NewBooking = async (req, res) => {
     if (!req?.body?.email || !req?.body?.hallid || !req?.body?.date || !req?.body?.starttime || !req?.body?.endtime) {
         return res.status(400).json({ 'message': 'All fields are required' });
     }
-    console.log(req.body)
+    console.log(req.body);
 
     try {
         const startTimeParts = req.body.starttime.split(':');
@@ -36,14 +36,49 @@ const NewBooking = async (req, res) => {
         endDate.setHours(endHour);
         endDate.setMinutes(endMinute);
 
-        const result = await Booking.create({
-            email: req.body.email,
-            hallid: req.body.hallid,
-            description: req.body.description,
-            starttime: startDate,
-            endtime: endDate,
-            date: req.body.date
-        })
+        // Start a new database transaction
+        const session = await Booking.startSession();
+        session.startTransaction();
+
+        // Check for overlapping bookings within the transaction
+        const overlappingBookings = await Booking.find({
+            date: req.body.date,
+            $or: [
+                {
+                    starttime: { $lt: endDate },
+                    endtime: { $gt: startDate }
+                },
+                {
+                    starttime: { $lte: startDate },
+                    endtime: { $gte: endDate }
+                }
+            ]
+        }).session(session);
+
+        // If there are any overlapping bookings, rollback the transaction and send a response
+        if (overlappingBookings.length > 0) {
+            await session.abortTransaction();
+            session.endSession();
+
+            return res.status(409).json({ message: 'Another booking already exists for the same time slot.' });
+        }
+
+        // Create the new booking within the transaction
+        const result = await Booking.create([
+            {
+                email: req.body.email,
+                hallid: req.body.hallid,
+                description: req.body.description,
+                starttime: startDate,
+                endtime: endDate,
+                date: req.body.date
+            }],
+            { session: session }
+        );
+
+        // Commit the transaction
+        await session.commitTransaction();
+        session.endSession();
 
         let config = {
             service: 'gmail',
@@ -51,19 +86,21 @@ const NewBooking = async (req, res) => {
                 user: GMAIL,
                 pass: PASS
             }
-        }
+        };
 
         let transporter = nodemailer.createTransport(config);
 
         let MailGenerator = new Mailgen({
-            theme: "cerberus",
+            theme: 'cerberus',
             product: {
-                name: "MITS HALLS.",
-                link: 'https://mailgen.js/' //link of our site
+                name: 'MITS HALLS.',
+                link: 'https://mailgen.js/' // Link to your site
             }
-        })
+        });
+
         const user = await User.findOne({ email: req.body.email }).exec();
         const hall = await Hall.findOne({ _id: req.body.hallid }).exec();
+
         let response = {
             body: {
                 name: user.username,
@@ -85,33 +122,40 @@ const NewBooking = async (req, res) => {
                         }
                     }
                 },
-                outro: "Use bookingId for cancellation",
-                signature: 'Thank you for choosing us:)'
+                outro: 'Use bookingId for cancellation',
+                signature: 'Thank you for choosing us :)'
             }
-        }
+        };
 
-        let mail = MailGenerator.generate(response)
+        let mail = MailGenerator.generate(response);
 
         let message = {
             from: GMAIL,
             to: req.body.email,
-            subject: "Booking confirmation",
+            subject: 'Booking confirmation',
             html: mail
-        }
+        };
 
         transporter.sendMail(message).then(() => {
             return res.status(201).json({
-                msg: "you should receive an email", result
-            })
+                msg: 'You should receive an email',
+                result
+            });
         }).catch(error => {
-            return res.status(500).json({ error })
-        })
-    }
-    catch (err) {
+            return res.status(500).json({ error });
+        });
+    } catch (err) {
         console.error(err);
-    }
 
-}
+        // Rollback the transaction
+        await session.abortTransaction();
+        session.endSession();
+
+        return res.status(500).json({ error: 'An error occurred while processing the booking.' });
+    }
+};
+
+
 
 const cancelBooking = async (req, res) => {
 
