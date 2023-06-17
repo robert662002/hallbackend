@@ -59,7 +59,7 @@ async function getAvailableHalls(req, res) {
     return res.json({ message: 'No available halls found.' });
   }
 
-  res.json(availableHalls );
+  res.json(availableHalls);
 }
 
 module.exports = { getAvailableHalls };

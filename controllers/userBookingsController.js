@@ -1,5 +1,5 @@
-const Booking = require('../model/Booking'); // Assuming the booking model is defined in a separate file
-const Hall = require('../model/Hall'); // Assuming the booking model is defined in a separate file
+const Booking = require('../model/Booking'); 
+const Hall = require('../model/Hall'); //to get hallname
 
 // Request handler function
 const getUserBookings = async (req, res) => {

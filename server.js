@@ -45,10 +45,15 @@ app.use('/register', require('./routes/register'));
 app.use('/auth', require('./routes/auth'));
 app.use('/refresh', require('./routes/refresh'));
 app.use('/logout', require('./routes/logout'));
-app.use('/bookings', require('./routes/api/bookings'));
 app.use('/home', require('./routes/api/homedisplay'));
-app.use('/userBookings',require('./routes/userBookings'));
+app.use('/feedback',require('./routes/feedback'));
+
+
 app.use(verifyJWT);
+
+app.use('/bookings', require('./routes/api/bookings'));
+app.use('/userBookings',require('./routes/userBookings'));
+
 app.use('/halls', require('./routes/api/halls'));
 app.use('/filter', require('./routes/filter2'));
 app.use('/employees', require('./routes/api/employees'));

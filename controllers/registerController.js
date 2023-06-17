@@ -59,7 +59,7 @@ const handleNewUser = async (req, res) => {
                         // Optionally, customize the column widths
                         customWidth: {
                             username: '30%',
-                            email: '50%'
+                            email: '40%'
                         }
                     }
                 },

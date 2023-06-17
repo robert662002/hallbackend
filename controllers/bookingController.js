@@ -8,10 +8,41 @@ const Hall = require('../model/Hall')
 
 
 const getAllBookings = async (req, res) => {
-    const bookings = await Booking.find();
-    if (!bookings) return res.status(204).json({ 'message': 'No bookings found.' });
-    res.json(bookings);
-}
+    try {
+        const bookings = await Booking.find();
+
+        if (!bookings || bookings.length === 0) {
+            return res.status(204).json({ message: 'No bookings found.' });
+        }
+
+        // Retrieve hallnames and usernames for each booking
+        const populatedBookings = await Promise.all(
+            bookings.map(async (booking) => {
+                const hall = await Hall.findById(booking.hallid);
+                const user = await User.findOne({email:booking.email}).exec();
+                const date = booking.date.toISOString().split('T')[0];
+                const startTime = booking.starttime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const endTime = booking.endtime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                return {
+                    _id: booking._id,
+                    email: booking.email,
+                    hallname: hall ? hall.hallname : null,
+                    username: user ? user.username : null,
+                    description: booking.description,
+                    date: date,
+                    starttime: startTime,
+                    endtime: endTime,
+                };
+            })
+        );
+
+        res.json(populatedBookings);
+    } catch (error) {
+        res.status(500).json({ message: 'Internal server error.' });
+    }
+};
+
 
 const NewBooking = async (req, res) => {
     if (!req?.body?.email || !req?.body?.hallid || !req?.body?.date || !req?.body?.starttime || !req?.body?.endtime) {
