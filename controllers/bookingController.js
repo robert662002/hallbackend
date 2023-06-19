@@ -219,7 +219,7 @@ const cancelBooking = async (req, res) => {
     })
     let response = {
         body: {
-            name: user.username,
+            name: user?.username,
             intro: 'Your booking has been cancelled!',
             table: {
                 data: [
