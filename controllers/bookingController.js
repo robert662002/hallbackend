@@ -224,7 +224,7 @@ const cancelBooking = async (req, res) => {
             table: {
                 data: [
                     {
-                        bookingId: booking._id,
+                        bookingId: booking?._id,
                         hallname: hall?.hallname,
                         date: booking.date,
                     }
