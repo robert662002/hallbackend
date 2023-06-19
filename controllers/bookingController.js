@@ -140,7 +140,7 @@ const NewBooking = async (req, res) => {
                 table: {
                     data: [
                         {
-                            bookingId: result._id,
+                            bookingId: result[0]._id,
                             hallname: hall.hallname,
                             date: req.body.date
                         }
