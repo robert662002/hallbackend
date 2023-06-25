@@ -39,7 +39,7 @@ const handleNewUser = async (req, res) => {
             theme: "cerberus",
             product: {
                 name: "MITS HALLS.",
-                link: 'https://mailgen.js/' //site of our link
+                link: 'https://mitshalls.onrender.com/' //site of our link
             }
         })
         let response = {

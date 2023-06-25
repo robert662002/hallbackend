@@ -126,7 +126,7 @@ const NewBooking = async (req, res) => {
             theme: 'cerberus',
             product: {
                 name: 'MITS HALLS.',
-                link: 'https://mailgen.js/' // Link to your site
+                link: 'https://mitshalls.onrender.com/' // Link to your site
             }
         });
 
@@ -136,7 +136,6 @@ const NewBooking = async (req, res) => {
         let response = {
             body: {
                 name: user.username,
-                intro1: 'epidraa...',
                 intro: 'Your booking has been confirmed!',
                 table: {
                     data: [
@@ -215,7 +214,7 @@ const cancelBooking = async (req, res) => {
         theme: "cerberus",
         product: {
             name: "MITS HALLS.",
-            link: 'https://mailgen.js/' //link of our site
+            link: 'https://mitshalls.onrender.com/' //link of our site
         }
     })
     let response = {
