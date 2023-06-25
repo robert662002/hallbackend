@@ -19,7 +19,7 @@ const getAllBookings = async (req, res) => {
         const populatedBookings = await Promise.all(
             bookings.map(async (booking) => {
                 const hall = await Hall.findById(booking.hallid);
-                const user = await User.findOne({email:booking.email}).exec();
+                const user = await User.findOne({ email: booking.email }).exec();
                 const date = booking.date.toISOString().split('T')[0];
                 const startTime = booking.starttime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 const endTime = booking.endtime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -73,6 +73,7 @@ const NewBooking = async (req, res) => {
 
         // Check for overlapping bookings within the transaction
         const overlappingBookings = await Booking.find({
+            hallid: req.body.hallid,
             date: req.body.date,
             $or: [
                 {
